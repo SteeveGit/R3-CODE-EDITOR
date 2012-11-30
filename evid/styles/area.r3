@@ -23,6 +23,7 @@ focus-offset: func [offset][
 		offset-to-caret face/text offset
 		face/caret/1
 	]
+	;focus face
 ]
 offset?: does [
 	caret-to-offset face/text face/caret/1 face/caret/2
@@ -116,15 +117,8 @@ when [
 
 	key [
 		;print ["area=>" key event/key event/flags]
+
 		face/shift?: find event/flags [shift]
-		if find event/flags [control][
-			key: select [
-				right right-word
-				left left-word
-				#"^C" copy
-				#"^V" paste
-			] key
-		]
 		if all[face/shift? not face/select?][face/start-select]
 		face/dirty?: off
 		switch/all key [

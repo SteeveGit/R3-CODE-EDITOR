@@ -41,12 +41,14 @@ lexer: context [
 				switch/default type?/word :value [
 					tag! [repend line/tokens [<tag> :value]]
 					error! [
-						append/only line/tokens copy/part
 						repend line/tokens [
-							<error> copy/part source next-source
-							<help> reform bind/copy
-								system/catalog/errors/(value/type)/(value/id)
-								to-object :value
+							<error> to-string copy/part source next-source
+							<help> ajoin [
+								">>> "
+								reduce bind/copy
+									system/catalog/errors/(value/type)/(value/id)
+									to-object :value
+							]
 						]
 					]
 				][
@@ -92,9 +94,7 @@ lexer: context [
 	rebuild: func [idx blk][
 		set-line idx
 		bin: clear #{}
-		while [blk: find next blk string!][
-			append bin blk/1
-		]
+		parse blk [any [to string! blk: (append bin blk/1) skip]]
 		clear line/tokens
 		parse bin [any token]
 		line/tokens

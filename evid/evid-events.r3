@@ -87,8 +87,6 @@ proto-face: context [
 	size: 100x100
 	pane-size: 1x1
 	text: color: draw: none
-	;image:
-	;effect:
 	data: none
 	edge: none
 	font: *font ; object!   [name style size color offset space align valign s...
@@ -155,7 +153,7 @@ do-leave-enter: new-upward [
 	start [clear entering]
 	loop [
 		either at: find/tail entered gob [
-			unless away [away: last at]
+			if all [drag? not away][set 'away at/0]
 			remove-each gob at [
 				do-event gob 'leave offset
 				on
@@ -182,7 +180,11 @@ do-up-click: funco [offset][
 ]
 do-over-away: funco [offset][
 	if away [do-event away 'away offset]
-	forall entered [do-event entered/1 'over offset]
+	forall entered [
+		unless away = entered/1 [
+			do-event entered/1 'over offset
+		]
+	]
 ]
 
 upward: new-upward [loop [do-action gob/data action]]
@@ -209,13 +211,26 @@ event-port/awake: funco [e][
 					return false
 				]
 				do-leave-enter gob event/offset
-				if drag? [do-over-away gob event/offset]
+				if drag? [
+					do-over-away gob event/offset
+				]
 				sav-offset: global/offset
 			]
 			key [
 				if key-face [
 					key: event/key
 					face: key-face
+				]
+				if find event/flags [control][
+					key: any [
+						select [
+							right right-word
+							left left-word
+							#"^C" copy
+							#"^V" paste
+						] key
+						key
+					]
 				]
 				do-action face 'key
 			]

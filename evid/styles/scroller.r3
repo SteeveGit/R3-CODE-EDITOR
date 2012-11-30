@@ -57,8 +57,6 @@ wheel: has [
 				(from/para/scroll * reverse parent/axis)
 				+ (face/offset / face/ratio * negate face/axis)
 			with from [scroll caller/axis show]
-			;scroll face/axis
-			;with parent [show]
 		]
 		resize [
 			face/pane-size: max 1x1 parent-size - (face/axis * 2 * width)

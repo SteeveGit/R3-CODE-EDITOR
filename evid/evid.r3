@@ -366,7 +366,7 @@ EVID: context bind [
 	]
 	focus: func [face [object! none!]][
 		unless face [exit]
-		unless empty? intersect [focus key] collect-words face/when [
+		unless empty? intersect [unfocus focus key] collect-words face/when [
 			if key-face [unfocus key-face]
 			do-action key-face: face 'focus
 		]

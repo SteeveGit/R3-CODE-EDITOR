@@ -49,9 +49,11 @@ beautify: [
 		  <comment> (color blue)
 		| <multi-string> (color leaf)
 		| <tag> tag! (color leaf)
-		| <error> (color red)
+		| <error> (color red underline)
+		| <help> (NEWLINE bold color red)
 	]
 	| [string! | char!] (color leaf)
+	| url! (color orange)
 	| skip (color black)
 
 ]
@@ -71,42 +73,39 @@ TEXT-MSG: [
 			size-text gob
 		]
 	]
-	when [
-		key [
-			switch key [
-				left left-word [
-					if face/home? [
-						show
-						with parent [face/focus-upper]
-						with key-face [do-key 'end]
-						if key = 'left [exit]
-						exit
-					]
-				]
-				right right-word [
-					if face/end? [
-						show
-						with parent [face/focus-lower]
-						with key-face [do-key 'home]
-						if key = 'right [exit]
-						exit
-					]
-				]
-				down [
-					tmp: key-face/offset? + 0x5
-					with parent [face/focus-lower]
-					with key-face [face/focus-offset tmp show]
-					exit
-				]
-				up [
-					tmp: key-face/offset? + 0x5
-					with parent [face/focus-upper]
-					with key-face [face/focus-offset tmp show]
-					exit
-				]
-				end []
+	tmp: none
+	override-key: [
+		left left-word [
+			if face/home? [
+				show
+				with parent [face/focus-upper]
+				with key-face [do-key 'end]
+				if key = 'left [exit]
 			]
 		]
+		right right-word [
+			if face/end? [
+				show
+				with parent [face/focus-lower]
+				with key-face [do-key 'home]
+				if key = 'right [exit]
+			]
+		]
+		down [
+			tmp: key-face/offset? + 0x5
+			with parent [face/focus-lower]
+			with key-face [face/focus-offset tmp show]
+			exit
+		]
+		up [
+			tmp: key-face/offset? + 0x5
+			with parent [face/focus-upper]
+			with key-face [face/focus-offset tmp show]
+			exit
+		]
+	]
+	when [
+		key [switch key override-key]
 	]
 	is styles/area
 
@@ -122,18 +121,19 @@ TEXT-MSG: [
 			size max face/size face/pane-size
 			; expand the width of list container
 			grow/x face/container face/pane-size
+			with parent [
+				size [full caller/pane-size]
+			]
 		]
 		down [
-			print parent/idx
+			print [parent/idx mold next find/tail face/text/text 'scroll]
 		]
 		key [
 			if face/dirty? [
 				; rebuil the line (lexer + decorate)
-				face/focus-offset also face/offset? all [
-					container/data/poke parent/idx face/text/text
-					text/extend container/data/pick parent/idx
-				]
-				;probe next find/tail face/text/text 'scroll
+				face/focus-offset also
+					face/offset?
+					container/data/update parent
 			]
 		]
 	]
@@ -163,9 +163,8 @@ MSG-LIST: [
 			is TEXT-MSG
 			;color green
 			when [
-				resize [
-					with parent/num [text form parent/idx]
-				]
+				focus [color 245.240.220]
+				unfocus [color none]
 			]
 		]
 		num: has [ ; line number
@@ -175,6 +174,9 @@ MSG-LIST: [
 			para [origin: 0x0]
 			text compose [para (face/para) font (face/font) color gray right text ""]
 			size 30x16
+			when [
+				resize [text form parent/idx]
+			]
 		]
 		focus-upper: does [
 			if same? gob first parent/gob [
@@ -193,10 +195,11 @@ MSG-LIST: [
 		when [
 			resize [
 				size [full 0x20]
-				with face/line [resize] show
+				resize-childs
 				grow/x parent face/pane-size
+				show
 			]
-			focus [key-face: face/line]
+			focus [focus face/line]
 		]
 	]
 	is styles/v-list
@@ -210,6 +213,19 @@ MSG-LIST: [
 			lexer/rebuild idx data
 		]
 		empty?: does [*sys/empty? data]
+		update: func [child /local idx tmp][	; a child
+			idx: child/idx
+			poke idx child/line/text/text
+			child/data: pick idx
+			with child/line [
+				tmp: face/size/y
+				resize
+				if face/size/y <> tmp [
+					print ['size tmp face/size/y]
+					do-action parent/container 'realign
+				]
+			]
+		]
 	]
 	when [
 		hscroll [face/scroll-text/x: face/para/scroll/x show]
@@ -224,19 +240,12 @@ editor: [
 	when [
 		resize [resize-childs show]
 		close [unview 'all halt]
-		scroll-line [
-			;print ["here scroll line" event/offset xy]
-			do-action face/vscroll 'down
-			do-action face/vscroll 'over
-			;show
-		]
 	]
-	;face/text: "DEMO DESK"
 
 	;- info box
 	INFO: has [
 		color gray
-		font [bold left]
+		font [bold white]
 		text "R3 Code editor"
 		when [
 			resize [size [full 20]]
@@ -248,20 +257,12 @@ editor: [
 	]
 	vscroll: has [ ; vertical scroller
 		from: list
-		when [
-			down []
-		]
 		is styles/scroller
 	]
 	hscroll: has [ ; horizontal scroller
 		axis: 1x0
 		from: list
 		is styles/scroller
-		with face/wheel [
-			when [
-				scroll []
-			]
-		]
 	]
 
 

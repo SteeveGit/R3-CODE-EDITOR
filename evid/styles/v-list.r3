@@ -168,7 +168,14 @@ when [
 			scroll 0x1
 		]
 	]
-
+	realign [
+		tmp: gob/1/offset/y + gob/1/size/y
+		foreach child next gob/pane [
+			child/data/offset/y: child/offset/y: tmp - 1
+			tmp: child/size/y + tmp - 1
+		]
+		show
+	]
 	;---------------
 	;- Scroll Action
 	scroll-up [face/scroll-line 30]
