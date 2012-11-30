@@ -56,7 +56,7 @@ decorate: context [
 				if bold? [
 					flush-text
 					append out [bold off]
-					underline?: off
+					bold?: off
 				]
 			)]
 		]

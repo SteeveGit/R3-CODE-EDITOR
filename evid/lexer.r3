@@ -38,6 +38,14 @@ lexer: context [
 		load-value: [
 			source: (
 				set [value next-source] transcode/next/error source
+				;*******************************
+				;*** transcode BUG or not??? ***
+				; path errors are returned built inside a path
+				if all [path? :value find :value error!][
+					value: first find :value error!
+					next-source: next next-source
+				]
+
 				switch/default type?/word :value [
 					tag! [repend line/tokens [<tag> :value]]
 					error! [

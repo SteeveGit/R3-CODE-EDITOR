@@ -17,13 +17,21 @@ either find face/text/text 'caret [
 		bind reduce ['caret face/cursor] ctx-evid/cmd-text
 ]
 
-focus-offset: func [offset][
+focus-offset: func [offset /local tmp][
 	unless find face/state 'focus [exit]
-	face/caret/1/1: head face/caret/2: first face/caret/1: any [
+	tmp: any [
 		offset-to-caret face/text offset
 		face/caret/1
 	]
-	;focus face
+	either string? tmp/1 [
+		face/caret/1/1: head face/caret/2: first face/caret/1: tmp
+	][
+		all [
+			tmp: find/reverse tmp string!
+			face/caret/1: tmp
+			face/caret/2: tail tmp/1
+		]
+	]
 ]
 offset?: does [
 	caret-to-offset face/text face/caret/1 face/caret/2
@@ -38,6 +46,7 @@ start-select: does [
 ]
 unselect: does [
 	unless find face/state 'select [exit]
+	unless face/select? [exit]
 	face/select?: off
 	clear face/cursor/highlight-start
 	clear face/cursor/highlight-end
@@ -113,6 +122,7 @@ when [
 	]
 	unfocus [
 		change face/caret [[""] ""] show
+		face/unselect
 	]
 
 	key [
@@ -185,14 +195,6 @@ when [
 				[change face/cursor/highlight-end face/caret]
 				[face/unselect]
 		]
-
-		;tmp: offset?
-		;if gob/size/y < (tmp/y + 18) [
-		;	face/_scroll: face/_scroll - 0x18
-		;]
-		;if 0 > tmp/y [
-		;	face/_scroll: face/_scroll + 0x18
-		;]
 		show
 	]
 ]

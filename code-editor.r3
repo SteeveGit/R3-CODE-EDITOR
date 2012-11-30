@@ -50,7 +50,7 @@ beautify: [
 		| <multi-string> (color leaf)
 		| <tag> tag! (color leaf)
 		| <error> (color red underline)
-		| <help> (NEWLINE bold color red)
+		| <help> (NEWLINE bold color 250.0.0)
 	]
 	| [string! | char!] (color leaf)
 	| url! (color orange)
