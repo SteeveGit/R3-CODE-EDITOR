@@ -57,11 +57,7 @@ lexer: context [
 						repend line/tokens [
 							<error> to-string copy/part source next-source
 							<help> ajoin [
-<<<<<<< HEAD
-								">>> "
-=======
 								"  >> "
->>>>>>> insert new lines
 								reduce bind/copy
 									system/catalog/errors/(value/type)/(value/id)
 									to-object :value
@@ -139,11 +135,6 @@ lexer: context [
 		set-line idx
 		bin: clear #{}
 		parse blk [any [to string! blk: (append bin blk/1) skip]]
-<<<<<<< HEAD
-		clear line/tokens
-		parse bin [any token]
-		line/tokens
-=======
 		either not find bin #{0A} [
 			change-line idx bin
 			line/tokens
@@ -159,7 +150,6 @@ lexer: context [
 			]
 			false ; inform caller of the reconstruction
 		]
->>>>>>> insert new lines
 	]
 	print-lines: does bind [
 		forall lines [

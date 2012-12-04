@@ -16,24 +16,12 @@ either find face/text/text 'caret [
 	insert find face/text/text 'scroll
 		bind reduce ['caret face/cursor] ctx-evid/cmd-text
 ]
-
 focus-offset: func [offset /local tmp][
-<<<<<<< HEAD
-	unless find face/state 'focus [exit]
-=======
 	unless find any [select face 'state []] 'focus [exit]
->>>>>>> insert new lines
 	tmp: any [
 		offset-to-caret face/text offset
 		face/caret/1
 	]
-<<<<<<< HEAD
-=======
-
-	;face/caret/2: at face/text/text/(index? tmp) index? tmp/1
-	;face/caret/1: at face/text/text index? tmp
-
->>>>>>> insert new lines
 	either string? tmp/1 [
 		face/caret/1/1: head face/caret/2: first face/caret/1: tmp
 	][

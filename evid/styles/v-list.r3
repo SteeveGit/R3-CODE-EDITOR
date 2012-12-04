@@ -190,13 +190,8 @@ when [
 	realign [
 		tmp: gob/1/offset/y + gob/1/size/y
 		foreach child next gob/pane [
-<<<<<<< HEAD
-			child/data/offset/y: child/offset/y: tmp - 1
-			tmp: child/size/y + tmp - 1
-=======
 			child/data/offset/y: child/offset/y: tmp + correct
 			tmp: child/size/y + tmp + correct
->>>>>>> insert new lines
 		]
 		show
 	]

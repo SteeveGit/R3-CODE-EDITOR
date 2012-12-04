@@ -32,19 +32,6 @@ decorate: context [
 		last-color: none
 		bind rule ctx
 		item: [
-<<<<<<< HEAD
-			  and [and <tag> rule] skip set value tag!
-				(append work mold :value)
-			| and [and <help> (start: tail out) rule]
-				skip set value string!
-			   (	append trailer start
-					clear start
-					repend trailer ['text use [err][err: value 'err]]
-				)
-			| and tag! rule set value skip
-				(append work value )
-			| [space (append work space)| tab (append work tab)]
-=======
 			and tag! [
 				  and [and [<open> | <close>] rule]
 				  	skip set value skip 2 skip
@@ -62,7 +49,6 @@ decorate: context [
 			]
 			| space (append work space)
 			| tab (append work tab)
->>>>>>> insert new lines
 			| set value rule (append work mold :value)
 		]
 		parse tokens [

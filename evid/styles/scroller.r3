@@ -58,13 +58,6 @@ wheel: has [
 		up			[box-color: 0.0.0.255  scroll-me show]
 		down		[box-color: sky show]
 		over away [
-<<<<<<< HEAD
-			move xy * face/axis
-			from/para/scroll:
-				(from/para/scroll * reverse parent/axis)
-				+ (face/offset / face/ratio * negate face/axis)
-			with from [scroll caller/axis show]
-=======
 			move xy * axis
 			either axis/x = 1 [
 				from/para/scroll/x: negate face/offset/x / face/ratio
@@ -73,7 +66,6 @@ wheel: has [
 				from/para/scroll/y: negate face/offset/y / face/ratio
 				with from [do-scroll/y show]
 			]
->>>>>>> insert new lines
 		]
 		resize [
 			face/pane-size: max 1x1 parent-size - (axis * 2 * width)

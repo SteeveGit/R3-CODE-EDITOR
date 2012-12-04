@@ -74,18 +74,13 @@ TEXT-MSG: [
 		]
 	]
 	tmp: none
-<<<<<<< HEAD
-	override-key: [
-=======
 	key-hook: [
->>>>>>> insert new lines
 		left left-word [
 			if face/home? [
 				show
 				with parent [face/focus-upper]
 				with key-face [do-key 'end]
 				if key = 'left [exit]
-<<<<<<< HEAD
 			]
 		]
 		right right-word [
@@ -96,18 +91,6 @@ TEXT-MSG: [
 				if key = 'right [exit]
 			]
 		]
-=======
-			]
-		]
-		right right-word [
-			if face/end? [
-				show
-				with parent [face/focus-lower]
-				with key-face [do-key 'home]
-				if key = 'right [exit]
-			]
-		]
->>>>>>> insert new lines
 		down [
 			tmp: key-face/offset? + 0x5
 			with parent [face/focus-lower]
@@ -122,11 +105,7 @@ TEXT-MSG: [
 		]
 	]
 	when [
-<<<<<<< HEAD
-		key [switch key override-key]
-=======
 		key [switch key key-hook]
->>>>>>> insert new lines
 	]
 	is styles/area
 
@@ -152,12 +131,6 @@ TEXT-MSG: [
 		]
 		key [
 			if face/dirty? [
-<<<<<<< HEAD
-				; rebuil the line (lexer + decorate)
-				face/focus-offset also
-					face/offset?
-					container/data/update parent
-=======
 				; rebuild the line (lexer + decorate)
 				parse container/data/update parent [
 					<resize> skip (
@@ -180,7 +153,6 @@ TEXT-MSG: [
 						with key-face [show do-key 'home]
 					)
 				]
->>>>>>> insert new lines
 			]
 		]
 	]
@@ -261,17 +233,6 @@ MSG-LIST: [
 		empty?: does [*sys/empty? data]
 		update: func [child /local idx tmp][	; a child
 			idx: child/idx
-<<<<<<< HEAD
-			poke idx child/line/text/text
-			child/data: pick idx
-			with child/line [
-				tmp: face/size/y
-				resize
-				if face/size/y <> tmp [
-					print ['size tmp face/size/y]
-					do-action parent/container 'realign
-				]
-=======
 			either poke idx child/line/text/text [
 				; simple modification (no newline or copy/paste)
 				child/data: pick idx
@@ -280,7 +241,6 @@ MSG-LIST: [
 				; big modification: a newline or copy/paste
 				child/data: pick idx
 				reduce [<change> idx <new> idx + 1]
->>>>>>> insert new lines
 			]
 		]
 	]

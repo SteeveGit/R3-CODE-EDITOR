@@ -370,20 +370,12 @@ EVID: context bind [
 			switch/all 'key key-face/when
 		]
 	]
-<<<<<<< HEAD
-	focus: func [face [object! none!]][
-		unless face [exit]
-		unless empty? intersect [unfocus focus key] collect-words face/when [
-			if key-face [unfocus key-face]
-			do-action key-face: face 'focus
-=======
 	focus: func [this [object! none!]][
 		unless this [exit]
 		unless empty? intersect [unfocus focus key] collect-words this/when [
 			all [key-face not same? key-face this unfocus key-face]
 			key-face: this
 			do-action this 'focus
->>>>>>> insert new lines
 		]
 		key-face
 	]
