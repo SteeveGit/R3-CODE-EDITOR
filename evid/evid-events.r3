@@ -251,7 +251,9 @@ event-port/awake: funco [e][
 			right-word left-word [
 				;** should be a key not an action
 				key: action
-				upward gob action: 'key  event/offset
+				action: 'key
+				;upward gob event/offset
+				do-action face 'key
 			]
 			key-up []
 			resize [

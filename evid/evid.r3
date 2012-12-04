@@ -334,8 +334,14 @@ EVID: context bind [
 	full: does [parent-size - face/offset]
 	till: func [this [object!]][max 0x0 this/offset - face/offset]
 	targeted?: does [same? event/gob/data face]
-	scroll: func [axis][
-		switch/all pick [hscroll vscroll] 0 < axis/x face/when
+	do-scroll: func [/offset pair [pair!] /x /y][
+		if offset [
+			face/para/scroll: face/para/scroll + pair
+		]
+		case/all [
+			x [switch/all 'hscroll face/when]
+			y [switch/all 'vscroll face/when]
+		]
 	]
 
 	flags: func [body [block!]][gob/flags: body]
@@ -364,15 +370,27 @@ EVID: context bind [
 			switch/all 'key key-face/when
 		]
 	]
+<<<<<<< HEAD
 	focus: func [face [object! none!]][
 		unless face [exit]
 		unless empty? intersect [unfocus focus key] collect-words face/when [
 			if key-face [unfocus key-face]
 			do-action key-face: face 'focus
+=======
+	focus: func [this [object! none!]][
+		unless this [exit]
+		unless empty? intersect [unfocus focus key] collect-words this/when [
+			all [key-face not same? key-face this unfocus key-face]
+			key-face: this
+			do-action this 'focus
+>>>>>>> insert new lines
 		]
 		key-face
 	]
-	unfocus: func [face][do-action face 'unfocus]
+	unfocus: func [face][
+		;if in face 'idx [print ["*** unfocus" face/idx]]
+		do-action face 'unfocus
+	]
 	upper: func [/local this][
 		if this: pick find parent/gob gob 0 [this/data]
 	]

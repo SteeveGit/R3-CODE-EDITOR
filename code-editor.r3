@@ -18,8 +18,8 @@ lexer/set-rule [
 		| open-b OPEN-CHAR
 		| close-b CLOSE-CHAR
 		| copy STR ["#{" | "2#{" | "16#{" | "64#{" | "#["] OPEN-STR
-		| copy STR [#";" [to crlf | to end]] (EMIT-STR <comment>)
-		| LOAD-VALUE
+		| copy STR [#";" any [not lf not crlf skip]] (EMIT-STR <comment>)
+		| DATA-TYPE
 	]]
 	#"{" [[
 			copy STR any [
@@ -74,13 +74,18 @@ TEXT-MSG: [
 		]
 	]
 	tmp: none
+<<<<<<< HEAD
 	override-key: [
+=======
+	key-hook: [
+>>>>>>> insert new lines
 		left left-word [
 			if face/home? [
 				show
 				with parent [face/focus-upper]
 				with key-face [do-key 'end]
 				if key = 'left [exit]
+<<<<<<< HEAD
 			]
 		]
 		right right-word [
@@ -91,6 +96,18 @@ TEXT-MSG: [
 				if key = 'right [exit]
 			]
 		]
+=======
+			]
+		]
+		right right-word [
+			if face/end? [
+				show
+				with parent [face/focus-lower]
+				with key-face [do-key 'home]
+				if key = 'right [exit]
+			]
+		]
+>>>>>>> insert new lines
 		down [
 			tmp: key-face/offset? + 0x5
 			with parent [face/focus-lower]
@@ -105,7 +122,11 @@ TEXT-MSG: [
 		]
 	]
 	when [
+<<<<<<< HEAD
 		key [switch key override-key]
+=======
+		key [switch key key-hook]
+>>>>>>> insert new lines
 	]
 	is styles/area
 
@@ -114,6 +135,7 @@ TEXT-MSG: [
 
 	when [
 		resize [
+			;prin ['upd " "]
 			text/extend parent/data
 			size 1x0 * parent/size
 
@@ -130,10 +152,35 @@ TEXT-MSG: [
 		]
 		key [
 			if face/dirty? [
+<<<<<<< HEAD
 				; rebuil the line (lexer + decorate)
 				face/focus-offset also
 					face/offset?
 					container/data/update parent
+=======
+				; rebuild the line (lexer + decorate)
+				parse container/data/update parent [
+					<resize> skip (
+						face/focus-offset also face/offset? resize
+						do-action face/container 'realign
+					)
+					| any [
+						  <change> skip
+						| <new>	skip
+					] (
+						resize
+						with parent [
+							with face/container [
+								show
+								face/refresh-below caller
+							]
+						]
+						with key-face [show do-key 'down]
+						; key-face changed
+						with key-face [show do-key 'home]
+					)
+				]
+>>>>>>> insert new lines
 			]
 		]
 	]
@@ -146,7 +193,6 @@ MSG-LIST: [
 	when [
 		resize [
 			;*** DON'T PUT a resize-childs below (added by is styles/v-list)
-			print ["resize list" parent/size]
 			size [full full]
 		]
 	]
@@ -156,12 +202,12 @@ MSG-LIST: [
 	child-style: [
 		container: caller
 		line: has [
+			;color green
 			container: caller/container
 			offset 35x0
 			face/font: container/text-font
 			face/para: container/para
 			is TEXT-MSG
-			;color green
 			when [
 				focus [color 245.240.220]
 				unfocus [color none]
@@ -215,6 +261,7 @@ MSG-LIST: [
 		empty?: does [*sys/empty? data]
 		update: func [child /local idx tmp][	; a child
 			idx: child/idx
+<<<<<<< HEAD
 			poke idx child/line/text/text
 			child/data: pick idx
 			with child/line [
@@ -224,6 +271,16 @@ MSG-LIST: [
 					print ['size tmp face/size/y]
 					do-action parent/container 'realign
 				]
+=======
+			either poke idx child/line/text/text [
+				; simple modification (no newline or copy/paste)
+				child/data: pick idx
+				reduce [<resize> idx]
+			][
+				; big modification: a newline or copy/paste
+				child/data: pick idx
+				reduce [<change> idx <new> idx + 1]
+>>>>>>> insert new lines
 			]
 		]
 	]
@@ -248,8 +305,25 @@ editor: [
 		font [bold white]
 		text "R3 Code editor"
 		when [
-			resize [size [full 20]]
+			resize [size [full - 50 20]]
 		]
+	]
+	button: has [
+		size 50x20
+		color blue
+		;text "button"
+		when [
+			resize [
+				offset [full - 50 0]
+			]
+			enter leave [print action]
+			click [
+				print 'click
+				text form key-face/gob/parent/data/idx
+				show
+			]
+		]
+
 	]
 	list: has [
 		offset 0x21

@@ -62,6 +62,7 @@ trace: 'func [b [block!]][
 		? tmp1 probe b halt
 	]
 ]
+correct: 0
 ;dprint: :print dprin: :prin
 dprint: dprin: none
 
@@ -79,6 +80,25 @@ hidden-to-pool: does [
 	clear face/hidden-above
 	clear face/hidden-below
 ]
+
+; refresh below a child
+refresh-below: func [child /local gob][
+
+	; print ["refresh below" child/idx]
+
+	; clear gobs below
+	gob: next find face/gob child/gob
+	;prin ["index:" index? gob " "]
+	while [not empty? gob][
+		append face/pool gob/1
+		;prin "-"
+		remove gob
+	]
+	print ""
+	append face/pool face/hidden-below
+	clear face/hidden-below
+	do-scroll/y
+]
 ;- Default child style (used if the user one is none!)
 child-style: any [child-style [
 	font [left sky "arial"]	para [wrap?: true]
@@ -95,7 +115,6 @@ assert [block? child-style]
 
 ; helper
 refresh-child: [
-	;face/text: none
 	face/gob/size: face/size: 0x0
 	face/pane-size: 1x1
 	if caller [face/data: caller/data/pick face/idx]
@@ -165,14 +184,19 @@ when [
 			foreach child gob/pane [
 				if object? child/data [with child/data refresh-child]
 			]
-			scroll 0x1
+			do-scroll/y
 		]
 	]
 	realign [
 		tmp: gob/1/offset/y + gob/1/size/y
 		foreach child next gob/pane [
+<<<<<<< HEAD
 			child/data/offset/y: child/offset/y: tmp - 1
 			tmp: child/size/y + tmp - 1
+=======
+			child/data/offset/y: child/offset/y: tmp + correct
+			tmp: child/size/y + tmp + correct
+>>>>>>> insert new lines
 		]
 		show
 	]
@@ -198,7 +222,7 @@ when [
 		tmp2: clear []
 		foreach child gob/pane [
 			child/data/offset/y: child/offset/y:  tmp
-			tmp: child/size/y + tmp - 1
+			tmp: child/size/y + tmp + correct
 			case [
 				tmp < 0 [
 					dprint ["hide above" child/data/idx]
@@ -226,19 +250,18 @@ when [
 			insert face/pool take/last face/pool		; replaced at the top of the pool (not visible)
 		]
 		unless tmp1 [; should never happen
-			dprint ["*** Error in V-LIST style: no sub-face to show ***"]
+
+			print ["*** Error in V-LIST style: no sub-face to show ***"]
+
 			dump-face face
 			exit
 		]
 
-		dprin "(hidden-above):"
-		foreach gob face/hidden-above [
-			dprin reform ["," gob/data/idx gob/data/type gob/offset]
-		]dprint ""
-
 		;- Insert new childs at the top of the window
 		tmp1: tmp1/data
-		trace ['head tmp1/idx]
+
+		;trace ['head tmp1/idx]
+
 		tmp2: none
 		tmp: clear []
 		while [true][
@@ -258,7 +281,7 @@ when [
 					]
 
 					face/trace_: tail face/trace_
-					scroll 0x1 ;rescroll
+					do-scroll/y ;rescroll
 					exit
 				]
 				break
@@ -274,7 +297,7 @@ when [
 			if gob? tmp2 [tmp2: tmp2/data]
 			tmp2/idx: tmp1/idx - 1
 			with tmp2 refresh-child
-			tmp2/gob/offset/y: tmp2/offset/y: tmp1/offset/y - tmp2/size/y - 1
+			tmp2/gob/offset/y: tmp2/offset/y: tmp1/offset/y - tmp2/size/y + correct
 			tmp1: tmp2
 			if tmp2/offset/y < face/size/y [
 				; inside the window, show it
@@ -288,15 +311,18 @@ when [
 
 		tmp1: any [last gob tmp1]
 		if gob? tmp1 [tmp1: tmp1/data]
-		;? tmp1
-		trace ['tail tmp1/idx]
+
+		;trace ['tail tmp1/idx]
+
 		tmp: clear []
 		while [true][
 			if tmp1/idx = face/data/length? [
 				if face/para/scroll/y < 0 [
 					if  0 < tmp: face/size/y - tmp1/offset/y - tmp1/size/y  - 1 [
 						; correct the wrong shift of the last child (re-scroll)
-						trace ['Bad-shift2 tmp1/idx 'shift tmp tmp1/offset]
+
+						print ['Bad-shift2 tmp1/idx 'shift tmp tmp1/offset]
+
 						face/para/scroll/y: face/size/y - face/pane-size/y
 						face/old-scroll/y: face/para/scroll/y - tmp
 						if empty? gob [
@@ -308,7 +334,7 @@ when [
 						]
 
 						face/trace_: tail face/trace_
-						scroll 0x1; re-scroll
+						do-scroll/y ; re-scroll
 						exit
 					]
 					tmp: []
@@ -326,9 +352,9 @@ when [
 			]
 			if gob? tmp2 [tmp2: tmp2/data]
 			; refresh it
-			dprin "+" dprint tmp2/idx: tmp1/idx + 1
+			tmp2/idx: tmp1/idx + 1
 			with tmp2 refresh-child
-			tmp2/gob/offset/y: tmp2/offset/y: tmp1/offset/y + tmp1/size/y - 1
+			tmp2/gob/offset/y: tmp2/offset/y: tmp1/offset/y + tmp1/size/y + correct
 			tmp1: tmp2
 			if tmp2/offset/y + tmp2/size/y > 0 [
 				; inside the window, show it
@@ -356,10 +382,10 @@ when [
 		; depending how far is the wheel from the destination.
 		; Remember, neither the scroller, neither the list know
 		;  the real size of the list (in pixels),
-		; because the sub-faces of the list may have dynamicly varying sizes,
+		; because the sub-faces of the list may have dynamic varying sizes,
 		; and their real size is only discovered during the scrolling
 		;  when they are actually showed.
-		; So, one have to correct these parameters on the fly.
+		; So, one has to correct these parameters on the fly.
 
 		;- Adjust the pane-size
 		tmp: last gob	; last sub-face currently showed

@@ -8,6 +8,7 @@ lexer: context [
 		parent: none
 	]
 	line: context [
+		raw: copy #{}
 		id: 1
 		tokens: make block! 7
 		bra: bracket
@@ -16,8 +17,9 @@ lexer: context [
 
 	push: func [value] bind [
 		parent: copy bracket
-		append  line/tokens: tail append line/tokens <open> :value
 		++ level
+		reduce/into [:value level '_]
+			line/tokens: tail append line/tokens <open>
 		opener: copy line
 		opener/bra: none
 		set closer: copy line none
@@ -25,17 +27,20 @@ lexer: context [
 	] bracket
 
 	pop: func [value] bind [
-		append line/tokens: tail append line/tokens <close> :value
-		resolve/all closer line
-		resolve/all bracket parent
+		reduce/into [:value level '_]
+			line/tokens: tail append line/tokens <close>
+		if parent [
+			resolve/all closer line
+			resolve/all bracket parent
+		] ;**** else missing opening bracket
 	] bracket
 
 	ctx: context [
 		OPEN-CHAR: [value: (push to char! value/0)]
 		CLOSE-CHAR: [value: (pop to char! value/0)]
 		str: none
-		open-str: [(push to string! str)]
-		load-value: [
+		OPEN-STR: [(push to string! str)]
+		DATA-TYPE: [
 			source: (
 				set [value next-source] transcode/next/error source
 				;*******************************
@@ -52,7 +57,11 @@ lexer: context [
 						repend line/tokens [
 							<error> to-string copy/part source next-source
 							<help> ajoin [
+<<<<<<< HEAD
 								">>> "
+=======
+								"  >> "
+>>>>>>> insert new lines
 								reduce bind/copy
 									system/catalog/errors/(value/type)/(value/id)
 									to-object :value
@@ -80,16 +89,38 @@ lexer: context [
 	source: next-source: none
 	set-rule: func [i][rules: bind i ctx]
 	rules: rule: [to lf | to end]
+	skip-lf: [opt [crlf | lf]]
 	token: [
 		  end break
-		| crlf break
+		| and crlf break
+		| and lf break
 		| rule
 	]
+	raw: none
 	create-line: bind [
 		(append lines copy/types line object!)
 		(rule: select-rule)
-		any token (tokens: make block! 7)
+		copy raw [any token] skip-lf (
+			lines/:id/raw: raw
+			tokens: make block! 7
+		)
 		opt [lf (++ id) ]
+	] line
+	change-line: func [idx bin] bind [
+		set-line idx
+		id: idx
+		tokens: clear head tokens
+		parse bin [copy raw [any token] bin:]
+		resolve/all lines/:idx line
+		bin
+	] line
+	new-line: func [bin] bind [
+		++ id
+		tokens: make block! 11
+		insert at lines id copy/types line object!
+		parse bin [skip-lf copy raw [any token] bin:]
+		resolve/all lines/:id line
+		bin
 	] line
 	all-lines: does [parse source [any create-line]]
 	set-line: func [idx][
@@ -99,13 +130,36 @@ lexer: context [
 			rule: select-rule
 		]
 	]
-	rebuild: func [idx blk][
+
+	blank: charset " ^-"
+	auto-indent: func [l1 l2 /local beg][
+		parse l1 [copy beg some blank (insert l2 beg)]
+	]
+	rebuild: func [idx blk /local bin source][
 		set-line idx
 		bin: clear #{}
 		parse blk [any [to string! blk: (append bin blk/1) skip]]
+<<<<<<< HEAD
 		clear line/tokens
 		parse bin [any token]
 		line/tokens
+=======
+		either not find bin #{0A} [
+			change-line idx bin
+			line/tokens
+		][
+			;*** Too slow, currently when a newline is inserted, all the lines
+			;    below are reconstructed.
+			unless empty? bin: change-line idx bin [
+				until [
+					print to-string line/raw
+					print ["new-line" line/id + 1]
+					empty? bin: new-line bin
+				]
+			]
+			false ; inform caller of the reconstruction
+		]
+>>>>>>> insert new lines
 	]
 	print-lines: does bind [
 		forall lines [

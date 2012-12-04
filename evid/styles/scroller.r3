@@ -6,18 +6,21 @@ type: 'scroller
 width: any [width 13]
 axis: any [axis 0x1] ; vertical scroller by default
 color from/color
+scroll-me: does [
+	if axis/x = 1 [do-scroll/x]
+	if axis/y = 1 [do-scroll/y]
+]
 with from: from [
 	;-- add actions in the scrolled face
 	when copy/deep [					; copy/deep to escape further binding
-		key [with wheel [scroll show]]	; Refresh wheel when a key is pressed
+		;key [with wheel [scroll-me show]]	; Refresh wheel when a key is pressed
 		resize [ 						; shrink the sabcrolled face
 			face/size: face/size - (width  * reverse axis)
 		]
-		hscroll [with wheel [scroll face/axis with parent [show]]]
-		vscroll [with wheel [scroll face/axis with parent [show]]]
+		hscroll [with wheel [scroll-me with parent [show]]]
+		vscroll [with wheel [scroll-me with parent [show]]]
 	]
 	; Append the scroller in the same parent than from.
-	; Because this style is invoked with has/hide instead of has
 	append parent/gob caller/gob
 	;caller/parent-face: parent
 ]
@@ -34,8 +37,11 @@ when [
 		from/para/scroll: from/para/scroll - face/axis + (
 			face/size * (face/axis * min 1x1 max -1x-1 face/wheel/offset - event/offset)
 		)
-		with from [scroll caller/axis show]
-		;with wheel [scroll face/axis show]
+		either face/axis/x = 1 [
+			with from [do-scroll/x show]
+		][
+			with from [do-scroll/y show]
+		]
 	]
 ]
 wheel: has [
@@ -46,25 +52,34 @@ wheel: has [
 	ratio: 1
 	when copy/deep [;copy/deep to escape binding (improve code readability)
 		enter [
-			scroll face/axis; not necessary
+			;scroll face/axis; not necessary
 			show
 		]
-		up			[box-color: 0.0.0.255  scroll face/axis show]
+		up			[box-color: 0.0.0.255  scroll-me show]
 		down		[box-color: sky show]
 		over away [
+<<<<<<< HEAD
 			move xy * face/axis
 			from/para/scroll:
 				(from/para/scroll * reverse parent/axis)
 				+ (face/offset / face/ratio * negate face/axis)
 			with from [scroll caller/axis show]
+=======
+			move xy * axis
+			either axis/x = 1 [
+				from/para/scroll/x: negate face/offset/x / face/ratio
+				with from [do-scroll/x show]
+			][
+				from/para/scroll/y: negate face/offset/y / face/ratio
+				with from [do-scroll/y show]
+			]
+>>>>>>> insert new lines
 		]
 		resize [
-			face/pane-size: max 1x1 parent-size - (face/axis * 2 * width)
-			scroll face/axis
+			face/pane-size: max 1x1 parent-size - (axis * 2 * width)
+			either axis/x = 1 [do-scroll/x][do-scroll/y]
 		]
 		vscroll [
-			;print ["pane-size:" "from" from/pane-size "scroller" face/pane-size]
-
 			face/ratio: face/pane-size/y / from/pane-size/y
 			size min parent-size
 				from/size * 0x1 * face/ratio + (1x2 * parent/width)
@@ -72,8 +87,6 @@ wheel: has [
 			move/abs from/para/scroll * face/ratio * 0x-1
 		]
 		hscroll [
-			;print ["pane-size:" "from" from/pane-size "scroller" face/pane-size]
-
 			face/ratio: face/pane-size/x / from/pane-size/x
 			size min parent-size
 				from/size * 1x0 * face/ratio + (1x2 * parent/width)
